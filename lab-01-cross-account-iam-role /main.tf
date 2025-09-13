@@ -35,11 +35,14 @@ resource "aws_iam_role_policy" "s3_access_policy" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["s3:ListBucket", "s3:GetObject"]
-        Resource = [
-          "arn:aws:s3:::my-shared-bucket",
-          "arn:aws:s3:::my-shared-bucket/*"
+        Action   = [
+          "s3:CreateBucket",
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
         ]
+        Resource = "*"
       }
     ]
   })
