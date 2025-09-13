@@ -41,38 +41,38 @@ For separate AWS accounts/profiles, configure your **Terraform CLI** or **AWS cr
 terraform init
 terraform plan
 terraform apply
+```
 3. Test
 From Account A, assume the role in Account B:
 
 bash
-Copy code
 aws sts assume-role \
   --role-arn arn:aws:iam::<AccountB_ID>:role/CrossAccountS3Access \
   --role-session-name test-session \
   --profile account_a
+
 Use the returned temporary credentials to test S3 operations, for example:
 
 bash
-Copy code
 aws s3 ls s3://<bucket_name> \
   --profile account_a
+
 4. Cleanup
 Tear down resources when finished:
 
 bash
-Copy code
 terraform destroy
-Troubleshooting
+
+##Troubleshooting
 Ensure your Account IDs and bucket names are correct.
 
 Verify both the trust policy (Account B role) and permissions policy (Account A).
 
 Run terraform plan to validate before applying.
 
-References
+##References
 AWS Tutorial: Delegate access across AWS accounts using IAM roles
 
 Terraform AWS Provider Documentation
 
-yaml
-Copy code
+
