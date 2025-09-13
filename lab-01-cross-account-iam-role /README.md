@@ -64,12 +64,14 @@ Tear down resources when finished:
 terraform destroy
 ```
 
-Troubleshooting
+##Troubleshooting
+
 Ensure your Account IDs and bucket names are correct.
 Verify both the trust policy (Account B role) and permissions policy (Account A).
 Run terraform plan to validate before applying.
 
-References
+##References
+
 AWS Tutorial: Delegate access across AWS accounts using IAM roles
 
 Terraform AWS Provider Documentation
