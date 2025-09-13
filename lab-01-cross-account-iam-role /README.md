@@ -63,7 +63,7 @@ Tear down resources when finished:
 terraform destroy
 ```
 
-# AWS Cross-Account S3 Lab - Mistakes and Fixes Summary
+## AWS Cross-Account S3 Lab - Mistakes and Fixes Summary
 
 ## 1. AWS CLI Command Syntax Errors
 
