@@ -246,6 +246,11 @@ aws s3 ls s3://bucket-name/  # List objects in specific bucket
 ## Final Working Solution:
 The lab was completed successfully using Option 1 configuration that creates all necessary IAM roles and policies in both accounts, with proper provider setup and resource references.
 
+<img width="666" height="29" alt="image" src="https://github.com/user-attachments/assets/ab39583e-cada-416f-80fa-7faa9e7a60ce" />
+
+<img width="935" height="327" alt="image" src="https://github.com/user-attachments/assets/afabaf2d-0d56-4f8b-a0a3-6a326b2c2ba9" />
+
+
 ## References
 
 [AWS Tutorial: Delegate access across AWS accounts using IAM roles](https://chatgpt.com/g/g-p-68c5ab47249081919ddd4124e53e1baf-hands-on-labs/c/68c5ac28-4f50-8321-b805-e9b46a14123d#:~:text=AWS%20Tutorial%3A%20Delegate,AWS%20Provider%20Documentation)
