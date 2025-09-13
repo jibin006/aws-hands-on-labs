@@ -42,7 +42,7 @@ terraform init
 terraform plan
 terraform apply
 ```
-3. Test
+### 3. Test
 From Account A, assume the role in Account B:
 
 ```bash
@@ -57,7 +57,7 @@ Use the returned temporary credentials to test S3 operations, for example:
 aws s3 ls s3://<bucket_name> \
   --profile account_a
 ```
-4. Cleanup
+### 4. Cleanup
 Tear down resources when finished:
 
 ```bash
