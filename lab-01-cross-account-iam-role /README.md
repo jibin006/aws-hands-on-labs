@@ -8,7 +8,6 @@ Enable Account A to securely access an S3 bucket in Account B via an IAM role an
 - Achieved by creating a cross-account IAM role in Account B that Account A can assume.
 
 ## Architecture Diagram
-## Architecture Diagram
 
 ```mermaid
 flowchart LR
