@@ -71,17 +71,16 @@ By the end of this lab, you will understand:
            {
                "Effect": "Allow",
                "Action": "s3:GetObject",
-               "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/*"
+               "Resource": "arn:aws:s3:::mybucket-jibin-lab/*"
            },
            {
                "Effect": "Allow",
                "Action": "s3:ListBucket",
-               "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME"
+               "Resource": "arn:aws:s3:::mybucket-jibin-lab"
            }
        ]
    }
    EOF
-   # Replace YOUR_BUCKET_NAME with actual bucket name
    ```
 
 4. Attach policy to user:
@@ -104,12 +103,12 @@ By the end of this lab, you will understand:
 
 2. Test GetObject (should succeed):
    ```bash
-   aws s3 cp s3://$BUCKET_NAME/test-file.txt downloaded-file.txt --profile policy-test
+   aws s3 cp s3://mybucket-jibin-lab/test-file.txt downloaded-file.txt --profile policy-test
    ```
 
 3. Test DeleteObject (should fail):
    ```bash
-   aws s3 rm s3://$BUCKET_NAME/test-file.txt --profile policy-test
+   aws s3 rm s3://mybucket-jibin-lab/test-file.txt --profile policy-test
    ```
 
 **Expected Outcome:** GetObject succeeds, DeleteObject fails with access denied error.
@@ -127,7 +126,12 @@ By the end of this lab, you will understand:
            {
                "Effect": "Allow",
                "Action": "s3:*",
-               "Resource": "*"
+               "Resource": "arn:aws:s3:::mybucket-jibin-lab/*"
+           },
+           {
+               "Effect": "Allow",
+               "Action": "s3:*",
+               "Resource": "arn:aws:s3:::mybucket-jibin-lab"
            }
        ]
    }
@@ -139,7 +143,7 @@ By the end of this lab, you will understand:
    aws iam put-user-policy --user-name policy-test-user --policy-name RestrictiveS3Policy --policy-document file://permissive-policy.json
    ```
 
-**Expected Outcome:** Policy updated to grant full S3 permissions across all buckets.
+**Expected Outcome:** Policy updated to grant full S3 permissions for the specific bucket.
 
 ### Step 5: Test Elevated Permissions
 
@@ -147,12 +151,12 @@ By the end of this lab, you will understand:
 
 1. Test DeleteObject again (should now succeed):
    ```bash
-   aws s3 rm s3://$BUCKET_NAME/test-file.txt --profile policy-test
+   aws s3 rm s3://mybucket-jibin-lab/test-file.txt --profile policy-test
    ```
 
 2. Verify file deletion:
    ```bash
-   aws s3 ls s3://$BUCKET_NAME/ --profile policy-test
+   aws s3 ls s3://mybucket-jibin-lab/ --profile policy-test
    ```
 
 **Expected Outcome:** DeleteObject succeeds, file is removed from bucket.
@@ -170,8 +174,8 @@ By the end of this lab, you will understand:
    ```
 
 2. Alternative: Use CloudTrail Event History in AWS Console to search for:
-   - Event name: `DeleteObject`
-   - User name: `policy-test-user`
+   - Event name: DeleteObject
+   - User name: policy-test-user
    - Time range: Last hour
 
 **Expected Outcome:** CloudTrail event showing successful DeleteObject operation by policy-test-user.
@@ -183,8 +187,8 @@ By the end of this lab, you will understand:
 1. **Console Method:**
    - Navigate to CloudTrail → Event History
    - Filter by:
-     - Event name: `DeleteObject`
-     - User name: `policy-test-user`
+     - Event name: DeleteObject
+     - User name: policy-test-user
      - Time range: Last 1-2 hours
    - Take screenshot of the event details
    - Download event JSON for detailed analysis
@@ -206,13 +210,13 @@ By the end of this lab, you will understand:
 ### Key Evidence Points
 
 Look for these fields in the CloudTrail event:
-- `eventName`: Should be "DeleteObject"
-- `userIdentity.userName`: Should be "policy-test-user"
-- `sourceIPAddress`: Your IP address
-- `requestParameters.bucketName`: Your test bucket
-- `requestParameters.key`: "test-file.txt"
-- `responseElements`: Should be null (indicating success)
-- `errorCode`: Should be absent (no error)
+• eventName: Should be "DeleteObject"
+• userIdentity.userName: Should be "policy-test-user"
+• sourceIPAddress: Your IP address
+• requestParameters.bucketName: mybucket-jibin-lab
+• requestParameters.key: "test-file.txt"
+• responseElements: Should be null (indicating success)
+• errorCode: Should be absent (no error)
 
 ## Cleanup Instructions
 
@@ -234,10 +238,10 @@ Look for these fields in the CloudTrail event:
 2. Delete S3 bucket and contents:
    ```bash
    # Remove any remaining objects
-   aws s3 rm s3://$BUCKET_NAME --recursive
+   aws s3 rm s3://mybucket-jibin-lab --recursive
    
    # Delete bucket
-   aws s3 rb s3://$BUCKET_NAME
+   aws s3 rb s3://mybucket-jibin-lab
    ```
 
 3. Clean up local files:
@@ -262,7 +266,7 @@ Look for these fields in the CloudTrail event:
 **2. "Bucket already exists" error**
 - S3 bucket names must be globally unique
 - Add a timestamp or random string to make it unique
-- Example: `policy-test-bucket-$(date +%s)-$RANDOM`
+- Example: mybucket-jibin-lab-$(date +%s)-$RANDOM
 
 **3. Policy not taking effect immediately**
 - IAM policies can take a few seconds to propagate
@@ -279,17 +283,17 @@ Look for these fields in the CloudTrail event:
 
 ### Security Notes
 
-- **Never use wildcard policies in production** - they violate the principle of least privilege
-- **Always monitor CloudTrail** for unusual activity patterns
-- **Regularly audit IAM policies** for overly broad permissions
-- **Use IAM Access Analyzer** to identify unused permissions
-- **Implement policy versioning** for rollback capabilities
+• Never use wildcard policies in production - they violate the principle of least privilege
+• Always monitor CloudTrail for unusual activity patterns
+• Regularly audit IAM policies for overly broad permissions
+• Use IAM Access Analyzer to identify unused permissions
+• Implement policy versioning for rollback capabilities
 
 ### Learning Reinforcement
 
 **Interview Questions to Consider:**
-1. What's the difference between `s3:GetObject` and `s3:*`?
-2. Why is `"Resource": "*"` dangerous in IAM policies?
+1. What's the difference between s3:GetObject and s3:*?
+2. Why is "Resource": "*" dangerous in IAM policies?
 3. How would you detect policy escalation attacks in a production environment?
 4. What AWS services help implement least privilege access?
 5. How long do CloudTrail events take to appear and how long are they retained?
