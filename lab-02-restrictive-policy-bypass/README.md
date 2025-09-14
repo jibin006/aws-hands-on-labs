@@ -36,15 +36,13 @@ By the end of this lab, you will understand:
 
 1. Create a unique S3 bucket:
    ```bash
-   aws s3 mb s3://policy-test-bucket-$(date +%s)
-   # Note: Replace with your actual bucket name for subsequent commands
-   export BUCKET_NAME=policy-test-bucket-$(date +%s)
+   aws s3 mb s3://mybucket-jibin-lab
    ```
 
 2. Create a test file and upload it:
    ```bash
    echo "This is a test file for policy demonstration" > test-file.txt
-   aws s3 cp test-file.txt s3://$BUCKET_NAME/
+   aws s3 cp test-file.txt s3://mybucket-jibin-lab/
    ```
 
 **Expected Outcome:** Bucket created successfully and file uploaded.
