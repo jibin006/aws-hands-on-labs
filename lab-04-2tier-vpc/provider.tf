@@ -4,31 +4,36 @@
 # ================================================================
 
 terraform {
-  required_version = ">= 1.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = ">= 5.62.0"
     }
   }
 }
 
 # Configure the AWS Provider
 provider "aws" {
-  region = var.aws_region
+  region = "us-east-1"
 
-  # Default tags for all resources
   default_tags {
     tags = {
-      Project     = var.project_name
-      Environment = var.environment
-      Owner       = "terraform"
-      Lab         = "lab-04-2tier-vpc"
-      ManagedBy   = "terraform"
-      CreatedDate = timestamp()
+      Project     = "2tier-vpc-lab"
+      Environment = "dev"
     }
   }
+
+  ignore_tags {
+    keys = [
+      "CreatedDate",
+      "Environment",
+      "ManagedBy",
+      "Owner",
+      "Project"
+    ]
+  }
 }
+
 
 # Data source to get current AWS account ID
 data "aws_caller_identity" "current" {}
