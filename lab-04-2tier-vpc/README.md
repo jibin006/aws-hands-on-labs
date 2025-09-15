@@ -167,6 +167,282 @@ After successful deployment, Terraform will output key information:
 - Instance IDs and Public IPs
 - Security Group IDs
 
+
+## Mistakes i made while doing this lab:
+
+summarizes the common issues encountered while building a 2-tier VPC infrastructure with Terraform and their solutions.
+
+## Issues Encountered & Solutions
+
+### 1. **Incorrect Attribute Value Type - CIDR Block**
+**Error:**
+```
+Error: Incorrect attribute value type
+cidr_block = var.public_subnet_cidrs
+var.public_subnet_cidrs is a list of string
+Inappropriate value for attribute "cidr_block": string required.
+```
+
+**Problem:** Trying to assign a list/array to `cidr_block` which expects a single string value.
+
+**Fix:** 
+- Use `for_each` to iterate over the list, OR
+- Change variable from list to single string:
+```hcl
+variable "public_subnet_cidr" {
+  default = "10.0.1.0/24"  # string, not ["10.0.1.0/24"]
+}
+```
+
+### 2. **Invalid CIDR Block - Placeholder Values**
+**Error:**
+```
+Error: "YOUR_IP/32" is not a valid CIDR block: invalid CIDR address: YOUR_IP/32
+```
+
+**Problem:** Left placeholder values in security group CIDR blocks.
+
+**Fix:** Replace placeholders with actual IP addresses:
+```hcl
+variable "my_ip" {
+  default = "203.0.113.25/32"  # Your actual public IP
+}
+```
+
+### 3. **Duplicate Resource Configuration**
+**Error:**
+```
+Error: Duplicate resource "aws_subnet" configuration
+A aws_subnet resource named "public" was already declared at main.tf:8,1-31
+```
+
+**Problem:** Same resource defined in multiple files (main.tf and variables.tf).
+
+**Fix:** Keep resources only in `main.tf`, variables only in `variables.tf`.
+
+### 4. **Missing Resource Instance Key**
+**Error:**
+```
+Error: Missing resource instance key
+Because aws_subnet.public has "for_each" set, its attributes must be accessed on specific instances.
+```
+
+**Problem:** Using `for_each` but referencing resource without specifying which instance.
+
+**Fix:** Either remove `for_each` for single resources or reference specific instances:
+```hcl
+# Option 1: Single resource (recommended for 2-tier VPC)
+resource "aws_subnet" "public" {
+  cidr_block = var.public_subnet_cidr  # No for_each
+}
+
+# Option 2: Multiple resources with specific reference
+subnet_id = values(aws_subnet.public)[0].id
+```
+
+### 5. **Each.value in Wrong Context**
+**Error:**
+```
+Error: each.value cannot be used in this context
+cidr_block = each.value
+```
+
+**Problem:** Using `each.value` without `for_each` declaration.
+
+**Fix:** Either add `for_each` or replace with variable reference:
+```hcl
+cidr_block = var.public_subnet_cidr  # Not each.value
+```
+
+### 6. **Variable Type Mismatch**
+**Error:**
+```
+Error: Incorrect attribute value type
+var.public_subnet_cidr is tuple with 1 element
+```
+
+**Problem:** Variable defined as list but used as string.
+
+**Fix:** Correct variable definition:
+```hcl
+variable "public_subnet_cidr" {
+  type    = string
+  default = "10.0.1.0/24"
+}
+```
+
+### 7. **Iteration Over Non-iterable Value**
+**Error:**
+```
+Error: Iteration over non-iterable value
+for i, cidr in var.public_subnet_cidr
+A value of type string cannot be used as the collection in a 'for' expression.
+```
+
+**Problem:** Using `for` loop on string variable instead of list.
+
+**Fix:** Either change variable to list or remove the `for` expression:
+```hcl
+# For single subnet (recommended)
+locals {
+  public_subnets = [{
+    cidr = var.public_subnet_cidr
+    az   = "us-east-1a"
+    name = "public-1"
+  }]
+}
+```
+
+### 8. **Duplicate Local Value Definition**
+**Error:**
+```
+Error: Duplicate local value definition
+A local value named "public_subnets" was already defined at locals.tf:2,3-8,4
+```
+
+**Problem:** Same local value defined in multiple files.
+
+**Fix:** Keep all locals in `locals.tf` only, remove duplicates from other files.
+
+### 9. **Reference to Undeclared Local Value**
+**Error:**
+```
+Error: Reference to undeclared local value
+A local value with the name "azs" has not been declared.
+```
+
+**Problem:** Using `local.azs` without defining it.
+
+**Fix:** Define the availability zones:
+```hcl
+locals {
+  azs = ["us-east-1a", "us-east-1b"]
+}
+```
+
+### 10. **Provider Inconsistent Final Plan - Tags**
+**Error:**
+```
+Error: Provider produced inconsistent final plan
+new element "CreatedDate" has appeared.
+This is a bug in the provider, which should be reported in the provider's own issue tracker.
+```
+
+**Problem:** AWS provider merging default tags with resource tags, causing state inconsistency.
+
+**Fix:** Add lifecycle rule to ignore tag changes:
+```hcl
+resource "aws_vpc" "main" {
+  # ... other configuration
+  
+  lifecycle {
+    ignore_changes = [tags_all]
+  }
+}
+```
+
+### 11. **Invalid Availability Zone**
+**Error:**
+```
+Error: InvalidParameterValue: Value (us-east-1a) for parameter availabilityZone is invalid.
+Subnets can currently only be created in: us-west-2a, us-west-2b, us-west-2c, us-west-2d.
+```
+
+**Problem:** Provider region doesn't match availability zone specified in resources.
+
+**Fix:** Ensure region and AZ alignment:
+```hcl
+provider "aws" {
+  region = "us-east-1"  # Match your AZ region
+}
+```
+
+### 12. **Incorrect EIP Domain Value**
+**Error:**
+```
+Error: expected domain to be one of ["vpc" "standard"], got true
+```
+
+**Problem:** Using boolean `true` instead of string value for EIP domain.
+
+**Fix:**
+```hcl
+resource "aws_eip" "nat_eip" {
+  domain = "vpc"  # Not domain = true
+}
+```
+
+### 13. **Invalid AMI ID**
+**Error:**
+```
+Error: InvalidAMIID.NotFound: The image id '[ami-12345678]' does not exist
+```
+
+**Problem:** Using non-existent or region-specific AMI ID.
+
+**Fix:** Use dynamic AMI lookup:
+```hcl
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+  
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
+
+resource "aws_instance" "web" {
+  ami = data.aws_ami.amazon_linux.id
+}
+```
+
+### 14. **Invalid Subnet ID**
+**Error:**
+```
+Error: InvalidSubnetID.NotFound: The subnet ID 'subnet-04330ff99efb20c99' does not exist
+```
+
+**Problem:** Hardcoded subnet IDs that don't exist or stale state.
+
+**Fix:** Reference Terraform-managed subnets:
+```hcl
+resource "aws_instance" "web" {
+  subnet_id = aws_subnet.public.id  # Reference, not hardcoded ID
+}
+```
+
+### 15. **CIDR Conflict**
+**Error:**
+```
+Error: InvalidSubnet.Conflict: The CIDR '10.0.1.0/24' conflicts with another subnet
+```
+
+**Problem:** Subnet CIDR overlaps with existing subnets in the VPC.
+
+**Fix:** Use non-conflicting CIDR ranges:
+```hcl
+variable "public_subnet_cidr"  { default = "10.0.10.0/24" }
+variable "private_subnet_cidr" { default = "10.0.20.0/24" }
+```
+
+## Key Lessons Learned
+
+1. **File Organization:** Keep resources in `main.tf`, variables in `variables.tf`, locals in `locals.tf`
+2. **Variable Types:** Be explicit about `string` vs `list(string)` in variable definitions
+3. **Resource References:** Use Terraform resource references (`aws_subnet.public.id`) instead of hardcoded IDs
+4. **Regional Consistency:** Ensure provider region matches availability zones and AMI availability
+5. **Tag Management:** Use `lifecycle { ignore_changes = [tags_all] }` to handle AWS auto-tagging
+6. **Dynamic Resources:** Use data sources for AMIs and other region-specific resources
+
+## Best Practices Applied
+
+- Use dynamic AMI lookup instead of hardcoded AMI IDs
+- Reference Terraform-managed resources instead of hardcoding AWS resource IDs  
+- Implement proper lifecycle management for tags
+- Maintain clear separation between variables, locals, and resources
+- Use meaningful resource names and consistent naming conventions
+
 ## Post-Deployment Testing
 
 ### Test 1: Connectivity Testing
