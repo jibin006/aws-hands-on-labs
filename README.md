@@ -1,5 +1,10 @@
-## Lab Index
+# Lab Index
 
-- [lab-01-cross-account-iam-role](https://github.com/jibin006/cloudsec-labs/tree/main/lab-01-cross-account-iam-role)
-- [lab-02-restrictive-policy-bypass](https://github.com/jibin006/cloudsec-labs/tree/main/lab-02-restrictive-policy-bypass)
-- [lab-04-2tier-vpc](https://github.com/jibin006/cloudsec-labs/tree/main/lab-04-2tier-vpc)
+- **[lab-01-cross-account-iam-role](https://github.com/jibin006/cloudsec-labs/tree/main/lab-01-cross-account-iam-role)**  
+  Learn how to configure and secure cross-account IAM roles for resource access between different AWS accounts.
+
+- **[lab-02-restrictive-policy-bypass](https://github.com/jibin006/cloudsec-labs/tree/main/lab-02-restrictive-policy-bypass)**  
+  Explore techniques for bypassing overly restrictive IAM policies and understand common misconfigurations.
+
+- **[lab-04-2tier-vpc](https://github.com/jibin006/cloudsec-labs/tree/main/lab-04-2tier-vpc)**  
+  Build and secure a two-tier VPC architecture with proper network segmentation and security controls.
