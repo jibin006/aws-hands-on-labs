@@ -6,5 +6,5 @@
 • **[lab-02-restrictive-policy-bypass](https://github.com/jibin006/cloudsec-labs/blob/main/lab-02-restrictive-policy-bypass/README.md)**  
   Explore techniques for bypassing overly restrictive IAM policies and understand common misconfigurations.
 
-• **[lab-04-2tier-vpc](https://github.com/jibin006/cloudsec-labs/tree/main/lab-04-2tier-vpc)**  
+• **[lab-04-2tier-vpc](https://github.com/jibin006/cloudsec-labs/blob/main/lab-04-2tier-vpc/README.md)**  
   Build and secure a two-tier VPC architecture with proper network segmentation and security controls.
